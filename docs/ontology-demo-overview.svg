@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">ontology-demo の最新構成と知識フロー</title>
+  <desc id="desc">料理アレルゲンと航空オペレーションの二つのオントロジーを構築し、OWL推論、SPARQL、SHACL、LLM、MCPサーバー、運航統制ダッシュボードへつなぐ全体構成図。</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+    <marker id="arrow-violet" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e11d48"/>
+    </marker>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="126%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; filter: url(#shadow); }
+      .soft { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1.2; }
+      .cuisine { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.8; }
+      .aviation { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; }
+      .reason { fill: #fffbeb; stroke: #d97706; stroke-width: 1.8; }
+      .llm { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.8; }
+      .ops { fill: #fff1f2; stroke: #e11d48; stroke-width: 1.8; }
+      .mcp { fill: #f0f9ff; stroke: #0284c7; stroke-width: 1.8; }
+      .file { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; }
+      .title { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 30px; font-weight: 700; fill: #0f172a; }
+      .subtitle { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 15px; fill: #475569; }
+      .section { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+      .label { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 13px; fill: #334155; }
+      .strong { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 14px; font-weight: 700; fill: #0f172a; }
+      .small { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 12px; fill: #64748b; }
+      .code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; fill: #334155; }
+      .pill-text { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; }
+      .arrow-blue { fill: none; stroke: #2563eb; stroke-width: 2.6; marker-end: url(#arrow-blue); }
+      .arrow-green { fill: none; stroke: #059669; stroke-width: 2.6; marker-end: url(#arrow-green); }
+      .arrow-violet { fill: none; stroke: #7c3aed; stroke-width: 2.6; marker-end: url(#arrow-violet); }
+      .arrow-red { fill: none; stroke: #e11d48; stroke-width: 2.6; marker-end: url(#arrow-red); }
+      .arrow-muted { fill: none; stroke: #94a3b8; stroke-width: 1.8; stroke-dasharray: 7 7; }
+      .stage { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900"/>
+
+  <text class="title" x="54" y="56">ontology-demo の最新構成と知識フロー</text>
+  <text class="subtitle" x="54" y="84">料理・アレルゲンの基礎デモから、航空 IROPS、LLM グラウンディング、MCP ツール公開までを一つの推論済み知識グラフ基盤として扱う</text>
+
+  <rect class="panel" x="48" y="122" width="360" height="612" rx="16"/>
+  <text class="section" x="76" y="157">1. オントロジーを構築</text>
+  <text class="small" x="76" y="181">Python + Owlready2 で語彙・公理・個体を定義し Turtle を生成</text>
+
+  <rect class="cuisine" x="76" y="210" width="304" height="174" rx="14"/>
+  <text class="strong" x="98" y="238">料理・食材・アレルゲン</text>
+  <rect class="file" x="98" y="256" width="248" height="34" rx="8"/>
+  <text class="code" x="116" y="278">src/build_ontology.py</text>
+  <text class="label" x="98" y="315">Dish / Ingredient / Allergen</text>
+  <text class="label" x="98" y="338">MeatDish・GlutenDish を自動分類</text>
+  <text class="small" x="98" y="363">出力: output/cuisine.ttl</text>
+
+  <rect class="aviation" x="76" y="410" width="304" height="224" rx="14"/>
+  <text class="strong" x="98" y="438">航空オペレーション・IROPS</text>
+  <rect class="file" x="98" y="456" width="248" height="34" rx="8"/>
+  <text class="code" x="116" y="478">aviation/build_ontology.py</text>
+  <rect class="file" x="98" y="500" width="248" height="34" rx="8"/>
+  <text class="code" x="108" y="522">aviation/build_irregular_scenario.py</text>
+  <text class="label" x="98" y="562">Flight / Airport / Aircraft / Crew</text>
+  <text class="label" x="98" y="585">Typhoon / Passenger / disruptedBy</text>
+  <text class="small" x="98" y="611">出力: output/aviation_irregular.ttl</text>
+
+  <rect class="soft" x="76" y="652" width="304" height="58" rx="12"/>
+  <text class="strong" x="98" y="676">RDF 1.2 注釈デモ</text>
+  <text class="code" x="98" y="696">src/rdf12_annotation_demo.py</text>
+  <text class="small" x="240" y="676">言明への出典・確信度</text>
+
+  <rect class="panel" x="470" y="122" width="430" height="612" rx="16"/>
+  <text class="section" x="498" y="157">2. 推論済みグラフへ変換</text>
+  <text class="small" x="498" y="181">OWL 2 の公理を使い、明示されていない型・関係を導出</text>
+
+  <rect class="reason" x="502" y="214" width="366" height="78" rx="14"/>
+  <text class="strong" x="526" y="242">OWL 2 DL / HermiT</text>
+  <text class="code" x="526" y="266">src/run_reasoner.py ・ aviation/run_reasoner.py</text>
+
+  <rect class="reason" x="502" y="314" width="366" height="98" rx="14"/>
+  <text class="strong" x="526" y="342">OWL 2 RL / owlrl + SPARQL</text>
+  <text class="label" x="526" y="367">純 Python で閉包を計算し、SELECT で照会</text>
+  <text class="code" x="526" y="392">src/query_sparql.py / ops_dashboard.py</text>
+
+  <rect class="soft" x="502" y="438" width="366" height="194" rx="14"/>
+  <text class="strong" x="526" y="466">主な導出ルール</text>
+  <text class="code" x="526" y="492">hasIngredient o containsAllergen =&gt; hasAllergen</text>
+  <text class="label" x="526" y="516">料理から食材経由のアレルゲンを導出</text>
+  <text class="code" x="526" y="545">assignedAircraft o hasOpenIssue =&gt; affectedBy</text>
+  <text class="label" x="526" y="569">整備事象をフライトへ波及</text>
+  <text class="code" x="526" y="598">departsFrom/arrivesAt o disruptedBy =&gt; affectedBy</text>
+  <text class="label" x="526" y="622">空港制限を発着便へ波及</text>
+
+  <rect class="llm" x="502" y="656" width="172" height="42" rx="21"/>
+  <text class="pill-text" x="535" y="681">SHACL 検証</text>
+  <rect class="llm" x="696" y="656" width="172" height="42" rx="21"/>
+  <text class="pill-text" x="728" y="681">プロパティパス</text>
+
+  <rect class="panel" x="960" y="122" width="390" height="612" rx="16"/>
+  <text class="section" x="988" y="157">3. 実務・AI ツールとして利用</text>
+  <text class="small" x="988" y="181">推論結果を CLI、ダッシュボード、LLM、エージェントへ渡す</text>
+
+  <rect class="cuisine" x="990" y="210" width="330" height="138" rx="14"/>
+  <text class="strong" x="1014" y="237">飲食店ユースケース</text>
+  <text class="code" x="1014" y="263">usecase/allergen_checker.py</text>
+  <text class="code" x="1014" y="286">usecase/shacl_validation.py</text>
+  <text class="code" x="1014" y="309">usecase/nl_ontology_qa.py</text>
+  <text class="small" x="1014" y="332">安全メニュー判定 / 品質検証 / Text-to-SPARQL</text>
+
+  <rect class="ops" x="990" y="374" width="330" height="158" rx="14"/>
+  <text class="strong" x="1014" y="401">運航管理・IROPS 統制</text>
+  <text class="code" x="1014" y="427">aviation/ops_dashboard.py</text>
+  <text class="code" x="1014" y="450">aviation/disruption_control.py</text>
+  <text class="label" x="1014" y="477">影響便・波及リスク・影響旅客</text>
+  <text class="label" x="1014" y="501">What-if とダイバート候補の判断材料</text>
+
+  <rect class="mcp" x="990" y="558" width="330" height="136" rx="14"/>
+  <text class="strong" x="1014" y="585">MCP サーバー</text>
+  <text class="code" x="1014" y="611">mcp_server/ontology_server.py</text>
+  <text class="label" x="1014" y="637">get_schema / sparql_query</text>
+  <text class="label" x="1014" y="660">safe_dishes / disrupted_flights</text>
+  <text class="small" x="1014" y="681">Claude Code 等のエージェントから利用</text>
+
+  <path class="arrow-blue" d="M 380 296 C 426 296, 450 246, 498 246"/>
+  <path class="arrow-green" d="M 380 522 C 432 522, 448 362, 498 362"/>
+  <path class="arrow-violet" d="M 868 362 C 918 314, 942 276, 986 276"/>
+  <path class="arrow-red" d="M 868 548 C 918 502, 942 458, 986 458"/>
+  <path class="arrow-blue" d="M 868 676 C 920 676, 940 628, 986 628"/>
+
+  <rect class="panel" x="48" y="782" width="1302" height="78" rx="16"/>
+  <text class="section" x="76" y="815">体系的に学ぶ流れ</text>
+  <text class="small" x="76" y="839">docs/learning-guide.md に 7 段階の教材を整理</text>
+
+  <rect class="stage" x="520" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="552" y="827">RDF</text>
+  <rect class="stage" x="630" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="653" y="827">SPARQL</text>
+  <rect class="stage" x="740" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="768" y="827">OWL 2</text>
+  <rect class="stage" x="850" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="882" y="827">推論</text>
+  <rect class="stage" x="960" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="992" y="827">設計</text>
+  <rect class="stage" x="1070" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="1102" y="827">運用</text>
+  <rect class="stage" x="1180" y="805" width="96" height="34" rx="17"/>
+  <text class="pill-text" x="1199" y="827">LLM 連携</text>
+  <path class="arrow-muted" d="M 616 822 L 630 822"/>
+  <path class="arrow-muted" d="M 726 822 L 740 822"/>
+  <path class="arrow-muted" d="M 836 822 L 850 822"/>
+  <path class="arrow-muted" d="M 946 822 L 960 822"/>
+  <path class="arrow-muted" d="M 1056 822 L 1070 822"/>
+  <path class="arrow-muted" d="M 1166 822 L 1180 822"/>
+</svg>
