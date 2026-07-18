@@ -30,7 +30,9 @@ ontology-demo/
 ├── aviation/                     # 応用デモ: 航空オペレーション・オントロジー
 │   ├── build_ontology.py         # ⑧ 便・機材・空港・乗務員・整備事象のモデル化
 │   ├── run_reasoner.py           # ⑨ HermiT: 便の自動分類・整備事象の波及・機材繰りの推移閉包
-│   └── ops_dashboard.py          # ⑩ 運航管理(OCC)ダッシュボード: アラート/遅延波及/資格チェック
+│   ├── ops_dashboard.py          # ⑩ 運航管理(OCC)ダッシュボード: アラート/遅延波及/資格チェック
+│   ├── build_irregular_scenario.py # ⑪ IROPS: 台風21号シナリオ (空港制限・乗務員繰り・旅客)
+│   └── disruption_control.py     # ⑫ IROPS 統制ダッシュボード: What-if/波及経路/影響旅客
 ├── docs/
 │   └── learning-guide.md         # 体系的学習ガイド（RDF→SPARQL→OWL→推論→設計→運用→LLM の 7 段階）
 ├── output/                       # 生成物 (.owl / .ttl) — スクリプトが再生成
@@ -117,6 +119,36 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 --- 3. 乗務資格チェック（型式限定を持たない割当 = 違反） ---
   AZ141 羽田→シンガポール | 鈴木機長 | ボーイング777-300
+```
+
+### イレギュラー運航 (IROPS) 統制シナリオ（⑪〜⑫）
+
+台風などのイレギュラー発生時は、影響が「空港 → 便 → 機材繰り → 乗務員繰り → 旅客」へ多段に波及します。⑪⑫は「台風21号が沖縄に接近し、那覇空港が運用制限に入った日」を構築し、この波及を推論で追跡する統制デモです。
+
+```bash
+.venv/bin/python aviation/build_irregular_scenario.py  # ⑪ 台風シナリオ構築
+.venv/bin/python aviation/disruption_control.py        # ⑫ IROPS 統制ダッシュボード
+```
+
+- **空港制限の波及**: チェーン `departsFrom ∘ disruptedBy ⊑ affectedBy` / `arrivesAt ∘ disruptedBy ⊑ affectedBy` により、「那覇空港が台風で運用制限」という 1 トリプルから那覇発着便（AZ987・AZ988）が影響便に自動分類されます
+- **What-if 比較**: 台風統制の有無で推論をやり直し、「新たに影響を受ける便」だけを差分表示。公理はそのまま、事実の付け外しでシナリオ比較できるのがオントロジーの強みです
+- **2 系統の波及経路**: 機材繰り（`rotatesTo+`）に加え、**乗務員繰り**（`crewConnectsTo`）を追跡。機材は無関係でも、影響便から乗り継ぐ乗務員がいる AZ345 羽田→福岡が波及リスクとして検出されます
+- **影響旅客の自動抽出**: `AffectedPassenger ≡ Passenger ⊓ ∃bookedOn.DisruptedFlight`。「影響便」の判定自体が推論結果なので、台風起因・整備起因を問わず要リブック旅客が推論の連鎖で洗い出されます
+
+⑫の出力例:
+
+```
+=== 0. What-if 比較: 台風統制の発動前後 ===
+  影響便 (台風なし): 2 便 → (台風統制発動後): 4 便
+    + 新たに影響: AZ987 羽田→那覇
+    + 新たに影響: AZ988 那覇→羽田
+
+--- 2b. 波及リスク: 乗務員繰り (crewConnectsTo) 経由の下流便 ---
+  AZ988 那覇→羽田 | AZ345 羽田→福岡 | 19:30
+
+--- 3. 影響旅客（推論による自動抽出）と原因 ---
+  伊藤様 | AZ987 羽田→那覇 | 台風21号(沖縄本島に接近中)
+  佐々木様 | AZ141 羽田→シンガポール | エンジン防氷系統の点検未完了
 ```
 
 ## 体系的に学ぶには
