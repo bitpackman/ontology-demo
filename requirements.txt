@@ -1,3 +1,5 @@
 rdflib>=7.6
 owlready2>=0.51
 owlrl>=7.6
+pyshacl>=0.40
+anthropic>=0.117
