@@ -13,7 +13,13 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 REPO = Path(__file__).resolve().parent.parent
-SERVER = REPO / "mcp_server" / "aviation_ontology_server.py"
+SERVER = REPO / "mcp_server" / "ontology_server.py"
+
+
+async def call(session, name, args=None):
+    print(f"\n=== {name}({args or ''}) ===")
+    res = await session.call_tool(name, args or {})
+    print(res.content[0].text)
 
 
 async def main() -> None:
@@ -27,22 +33,19 @@ async def main() -> None:
             for t in tools.tools:
                 print(f"  - {t.name}: {(t.description or '').splitlines()[0]}")
 
-            print("\n=== disrupted_flights ===")
-            res = await session.call_tool("disrupted_flights", {})
-            print(res.content[0].text)
-
-            print("\n=== sparql_query (国内線の一覧) ===")
-            res = await session.call_tool("sparql_query", {"query": """
-                SELECT ?label WHERE {
-                  ?f a avi:DomesticFlight ; rdfs:label ?label .
-                  FILTER(LANG(?label) = "ja")
-                } ORDER BY ?label
-            """})
-            print(res.content[0].text)
-
-            print("\n=== affected_passengers ===")
-            res = await session.call_tool("affected_passengers", {})
-            print(res.content[0].text)
+            await call(session, "disrupted_flights")
+            await call(session, "alternate_airports", {"flight": "az987"})
+            await call(session, "simulate_airport_disruption",
+                       {"airport_codes": ["cts"]})
+            await call(session, "disrupted_flights")  # シミュレーション反映を確認
+            await call(session, "reload_graph")
+            await call(session, "safe_dishes", {"avoid_allergens": ["小麦", "えび"]})
+            await call(session, "sparql_query", {
+                "graph": "cuisine",
+                "query": """SELECT ?label WHERE {
+                              ?d a cuisine:MeatDish ; rdfs:label ?label .
+                              FILTER(LANG(?label) = "ja") }""",
+            })
 
 
 if __name__ == "__main__":

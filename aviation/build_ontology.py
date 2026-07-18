@@ -155,6 +155,14 @@ with onto:
         domain = [Delay]; range = [int]
         label = [locstr("遅延時間(分)", "ja")]
 
+    class runwayLengthM(DataProperty, FunctionalProperty):
+        domain = [Airport]; range = [int]
+        label = [locstr("最長滑走路長(m)", "ja")]
+
+    class requiredRunwayM(DataProperty, FunctionalProperty):
+        domain = [AircraftModel]; range = [int]
+        label = [locstr("必要滑走路長(m)", "ja")]
+
     # ---- 定義クラス (必要十分条件): 推論器が個体を自動分類する ----
     japan = Country("japan", label=[locstr("日本", "ja")])
     usa = Country("usa", label=[locstr("アメリカ", "ja")])
@@ -174,18 +182,31 @@ with onto:
         equivalent_to = [Flight & affectedBy.some(OperationalEvent)]
         label = [locstr("影響便(要対応)", "ja")]
 
-    # ---- 個体: 空港 ----
-    hnd = Airport("hnd", label=[locstr("東京/羽田", "ja")], locatedIn=japan)
-    itm = Airport("itm", label=[locstr("大阪/伊丹", "ja")], locatedIn=japan)
-    cts = Airport("cts", label=[locstr("札幌/新千歳", "ja")], locatedIn=japan)
-    oka = Airport("oka", label=[locstr("沖縄/那覇", "ja")], locatedIn=japan)
-    lax = Airport("lax", label=[locstr("ロサンゼルス", "ja")], locatedIn=usa)
-    sin = Airport("sin", label=[locstr("シンガポール", "ja")], locatedIn=singapore)
+    # ---- 個体: 空港 (滑走路長はダイバート先推論に使う。値はデモ用の概数) ----
+    hnd = Airport("hnd", label=[locstr("東京/羽田", "ja")], locatedIn=japan,
+                  runwayLengthM=3360)
+    itm = Airport("itm", label=[locstr("大阪/伊丹", "ja")], locatedIn=japan,
+                  runwayLengthM=3000)
+    cts = Airport("cts", label=[locstr("札幌/新千歳", "ja")], locatedIn=japan,
+                  runwayLengthM=3000)
+    oka = Airport("oka", label=[locstr("沖縄/那覇", "ja")], locatedIn=japan,
+                  runwayLengthM=3000)
+    ukb = Airport("ukb", label=[locstr("神戸", "ja")], locatedIn=japan,
+                  runwayLengthM=2500)
+    ngo = Airport("ngo", label=[locstr("中部/セントレア", "ja")], locatedIn=japan,
+                  runwayLengthM=3500)
+    lax = Airport("lax", label=[locstr("ロサンゼルス", "ja")], locatedIn=usa,
+                  runwayLengthM=3939)
+    sin = Airport("sin", label=[locstr("シンガポール", "ja")], locatedIn=singapore,
+                  runwayLengthM=4000)
 
     # ---- 個体: 機種・機材 ----
-    b787_9 = WidebodyModel("b787_9", label=[locstr("ボーイング787-9", "ja")])
-    b777_300 = WidebodyModel("b777_300", label=[locstr("ボーイング777-300", "ja")])
-    a320neo = NarrowbodyModel("a320neo", label=[locstr("エアバスA320neo", "ja")])
+    b787_9 = WidebodyModel("b787_9", label=[locstr("ボーイング787-9", "ja")],
+                           requiredRunwayM=2600)
+    b777_300 = WidebodyModel("b777_300", label=[locstr("ボーイング777-300", "ja")],
+                             requiredRunwayM=2700)
+    a320neo = NarrowbodyModel("a320neo", label=[locstr("エアバスA320neo", "ja")],
+                              requiredRunwayM=2000)
 
     issue_eng01 = MaintenanceIssue(
         "issue_eng01",

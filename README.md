@@ -34,7 +34,7 @@ ontology-demo/
 │   ├── build_irregular_scenario.py # ⑪ IROPS: 台風21号シナリオ (空港制限・乗務員繰り・旅客)
 │   └── disruption_control.py     # ⑫ IROPS 統制ダッシュボード: What-if/波及経路/影響旅客
 ├── mcp_server/                   # MCP サーバー: Claude Code 等からオントロジーに接続
-│   ├── aviation_ontology_server.py # ⑬ 推論済み知識グラフをツールとして公開 (stdio)
+│   ├── ontology_server.py        # ⑬ 推論済み知識グラフ (航空+料理) をツールとして公開 (stdio)
 │   └── test_client.py            # 動作確認用 MCP クライアント
 ├── docs/
 │   └── learning-guide.md         # 体系的学習ガイド（RDF→SPARQL→OWL→推論→設計→運用→LLM の 7 段階）
@@ -156,39 +156,54 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ## MCP サーバー: Claude Code からオントロジーに接続する（⑬）
 
-推論済みの航空知識グラフを [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) サーバーとして公開し、Claude Code などの AI エージェントからツールとして使えるようにします。エージェントがオントロジーを「外部の信頼できる知識源」として参照する構成で、⑦の Text-to-SPARQL をエージェント側から自然に行えます。
+推論済みの知識グラフを [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) サーバーとして公開し、Claude Code などの AI エージェントからツールとして使えるようにします。エージェントがオントロジーを「外部の信頼できる知識源」として参照する構成で、⑦の Text-to-SPARQL をエージェント側から自然に行えます。
 
-**公開ツール**: `get_schema`（語彙一覧）/ `sparql_query`（任意の SELECT/ASK、読み取り専用）/ `disrupted_flights` / `propagation_risks` / `affected_passengers` / `reload_graph`
+**マルチグラフ対応**: `aviation`（航空オペレーション・台風シナリオ）と `cuisine`（料理・アレルゲン）の 2 グラフを 1 サーバーで公開します。
+
+| ツール | 対象 | 内容 |
+|---|---|---|
+| `get_schema(graph)` | 共通 | 語彙一覧（SPARQL を書く前に呼ぶ） |
+| `sparql_query(query, graph)` | 共通 | 任意の SELECT/ASK（読み取り専用、更新系は拒否） |
+| `disrupted_flights` / `propagation_risks` / `affected_passengers` | aviation | IROPS 定型分析（推論結果） |
+| `alternate_airports(flight)` | aviation | **ダイバート先候補の推論**: 機種の必要滑走路長 × 空港の滑走路長 × 運用制限で候補を絞り、除外理由も返す |
+| `simulate_airport_disruption(airport_codes)` | aviation | **What-if シミュレーション**: 任意の空港を運用制限にして再推論。以後の全ツールがシミュレーション状態で応答（`reload_graph` で解除） |
+| `safe_dishes(avoid_allergens)` | cuisine | アレルゲン回避メニュー判定 |
+| `reload_graph` | 共通 | ファイルから再読み込み・再推論 |
 
 ```bash
-# 事前準備: シナリオを構築しておく
+# 事前準備: グラフを構築しておく
+.venv/bin/python src/build_ontology.py
 .venv/bin/python aviation/build_ontology.py
 .venv/bin/python aviation/build_irregular_scenario.py
 
 # Claude Code に登録 (パスは環境に合わせる)
-claude mcp add aviation-ontology -- \
-  $(pwd)/.venv/bin/python $(pwd)/mcp_server/aviation_ontology_server.py
+claude mcp add ontology-demo -- \
+  $(pwd)/.venv/bin/python $(pwd)/mcp_server/ontology_server.py
 
 # 接続確認
-claude mcp list          # aviation-ontology: ✔ Connected
+claude mcp list          # ontology-demo: ✔ Connected
 
 # Claude Code なしでの動作確認
 .venv/bin/python mcp_server/test_client.py
 ```
 
-Claude Code から使う例:
+Claude Code から使う例（実際に動作確認済み）:
 
 ```
-> 台風の影響を受けている旅客とその原因、波及リスクのある便を調べて
+> もし台風が新千歳を直撃したら影響便はどう変わる？
+  → simulate_airport_disruption(["cts"]): AZ103 が新たに影響、那覇便は解消、と差分報告
 
-（Claude が affected_passengers / propagation_risks / sparql_query を呼び出し、
- 推論済みグラフの内容だけを根拠に、影響旅客 2 名・台風起因 2 便・
- 機材繰り/乗務員繰りの波及リスク便をレポートする）
+> AZ987 のダイバート先候補は？
+  → alternate_airports("az987"): 777-300 は必要滑走路 2700m のため
+    神戸(2500m)は除外、中部・羽田・伊丹・福岡などが候補。
+    シミュレーション中なら制限中の空港も自動で除外される
+
+> 小麦アレルギーの顧客に出せるメニューは？
+  → safe_dishes(["小麦"]): 醤油経由の導出アレルゲンまで考慮して判定
 ```
 
-- 決まった分析は専用ツール（`disrupted_flights` など）で確実に、探索的な質問は `get_schema` → `sparql_query` の 2 段で柔軟に答えられる設計です
-- サーバーは読み取り専用で、更新系 SPARQL は拒否します
-- シナリオを組み替えたら（例: 台風の対象空港を変更）`reload_graph` で再推論されます
+- 決まった分析は専用ツールで確実に、探索的な質問は `get_schema` → `sparql_query` の 2 段で柔軟に答えられる設計です
+- What-if は in-memory で行われ、ファイルは書き換えません。`reload_graph` でいつでも元のシナリオに戻ります
 
 ## 体系的に学ぶには
 

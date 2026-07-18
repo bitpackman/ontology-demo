@@ -72,7 +72,8 @@ with onto:
     onto.oka.disruptedBy = [typhoon_21]
 
     # ---- 追加の空港・機材・フライト ----
-    fuk = bo.Airport("fuk", label=[locstr("福岡", "ja")], locatedIn=onto.japan)
+    fuk = bo.Airport("fuk", label=[locstr("福岡", "ja")], locatedIn=onto.japan,
+                     runwayLengthM=2800)
     ja805x = bo.Aircraft("ja805x", label=[locstr("JA805X (A320neo)", "ja")],
                          hasModel=onto.a320neo)
 
