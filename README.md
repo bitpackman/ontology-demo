@@ -33,6 +33,9 @@ ontology-demo/
 │   ├── ops_dashboard.py          # ⑩ 運航管理(OCC)ダッシュボード: アラート/遅延波及/資格チェック
 │   ├── build_irregular_scenario.py # ⑪ IROPS: 台風21号シナリオ (空港制限・乗務員繰り・旅客)
 │   └── disruption_control.py     # ⑫ IROPS 統制ダッシュボード: What-if/波及経路/影響旅客
+├── mcp_server/                   # MCP サーバー: Claude Code 等からオントロジーに接続
+│   ├── aviation_ontology_server.py # ⑬ 推論済み知識グラフをツールとして公開 (stdio)
+│   └── test_client.py            # 動作確認用 MCP クライアント
 ├── docs/
 │   └── learning-guide.md         # 体系的学習ガイド（RDF→SPARQL→OWL→推論→設計→運用→LLM の 7 段階）
 ├── output/                       # 生成物 (.owl / .ttl) — スクリプトが再生成
@@ -150,6 +153,42 @@ export ANTHROPIC_API_KEY=sk-ant-...
   伊藤様 | AZ987 羽田→那覇 | 台風21号(沖縄本島に接近中)
   佐々木様 | AZ141 羽田→シンガポール | エンジン防氷系統の点検未完了
 ```
+
+## MCP サーバー: Claude Code からオントロジーに接続する（⑬）
+
+推論済みの航空知識グラフを [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) サーバーとして公開し、Claude Code などの AI エージェントからツールとして使えるようにします。エージェントがオントロジーを「外部の信頼できる知識源」として参照する構成で、⑦の Text-to-SPARQL をエージェント側から自然に行えます。
+
+**公開ツール**: `get_schema`（語彙一覧）/ `sparql_query`（任意の SELECT/ASK、読み取り専用）/ `disrupted_flights` / `propagation_risks` / `affected_passengers` / `reload_graph`
+
+```bash
+# 事前準備: シナリオを構築しておく
+.venv/bin/python aviation/build_ontology.py
+.venv/bin/python aviation/build_irregular_scenario.py
+
+# Claude Code に登録 (パスは環境に合わせる)
+claude mcp add aviation-ontology -- \
+  $(pwd)/.venv/bin/python $(pwd)/mcp_server/aviation_ontology_server.py
+
+# 接続確認
+claude mcp list          # aviation-ontology: ✔ Connected
+
+# Claude Code なしでの動作確認
+.venv/bin/python mcp_server/test_client.py
+```
+
+Claude Code から使う例:
+
+```
+> 台風の影響を受けている旅客とその原因、波及リスクのある便を調べて
+
+（Claude が affected_passengers / propagation_risks / sparql_query を呼び出し、
+ 推論済みグラフの内容だけを根拠に、影響旅客 2 名・台風起因 2 便・
+ 機材繰り/乗務員繰りの波及リスク便をレポートする）
+```
+
+- 決まった分析は専用ツール（`disrupted_flights` など）で確実に、探索的な質問は `get_schema` → `sparql_query` の 2 段で柔軟に答えられる設計です
+- サーバーは読み取り専用で、更新系 SPARQL は拒否します
+- シナリオを組み替えたら（例: 台風の対象空港を変更）`reload_graph` で再推論されます
 
 ## 体系的に学ぶには
 
