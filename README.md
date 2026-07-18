@@ -30,6 +30,8 @@ ontology-demo/
 ## セットアップ
 
 ```bash
+git clone https://github.com/bitpackman/ontology-demo.git
+cd ontology-demo
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
@@ -73,4 +75,4 @@ python3 -m venv .venv
 
 ## ライセンス
 
-MIT License
+[MIT License](LICENSE)
